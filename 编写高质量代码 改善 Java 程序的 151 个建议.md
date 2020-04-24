@@ -475,7 +475,7 @@
   } 
   ```
 
-* 不要随便设置随机种子
+* 建议 30：不要随便设置随机种子
 
   在 Java 中，随机数的产生取决于种子，随机数和种子之间的关系遵从以下两个规则：
 
@@ -484,3 +484,342 @@
   种子相同，即使实例不同也产生相同的随机数。
 
   Random 类的默认种子（无参构造）是 System.nanoTime() 的返回值，注意这个值是距离某一个固定时间点的纳秒数。
+
+### 第三章 类、对象及方法
+
+* 建议 31：接口中不要存在实现代码
+
+  在接口中声明一个静态常量，其值是一个匿名内部类的实例对象。
+
+  接口是一个契约，不仅仅约束着实现者，同时也是一个保证，保证提供的服务（常量、方法）是稳定的、可靠的，如果把实现代码写到接口中，那接口就绑定了可能变化的因素，这就会导致实现不再稳定和可靠，是随时都可能被抛弃、被更改、被重构的。
+
+* 建议 32：静态变量一定要先声明后赋值
+
+  ```java
+  public class Client {
+      static {
+          i = 100;
+      }
+      public static int i = 1;
+  }
+  ```
+
+  静态变量是类加载时被分配到数据区的，它在内存中只有一个拷贝，不会被分配多次，其后的所有赋值操作都是值改变，地址则保持不变。
+
+  我们知道 JVM 初始化变量是先声明空间，然后再赋值的。静态变量是在类初始化时首先被加载的，JVM 会去查找类中所有的静态声明，然后分配空间，注意这时候只是完成了地址空间的分配，还没有赋值，之后 JVM 会根据类中静态赋值（包括静态类赋值和静态块赋值）的先后顺序来执行。
+
+* 建议 33：不要覆写静态方法
+
+  在 Java 中可以通过覆写（Override）来增强或减弱父类的方法或行为，但覆写是针对非静态方法（也叫做实例方法，只有生成实例才能调用的方法）的，不能针对静态方法（static 修饰的方法，也叫做类方法）。
+
+  我们知道一个实例对象有两个类型，表面类型（Apparent Type）和实际类型（Actual Type），表面类型是声明时的类型，实际类型是对象产生时的类型。
+
+  对于非静态方法，它是根据对象的实际类型来执行的。而对于静态方法来说就比较特殊了，首先静态方法不依赖实例对象，它是通过类名访问的；其次，可以通过对象访问静态方法，如果是通过对象调用静态方法，JVM 则会通过对象的表面类型查找到静态方法的入口，继而执行之。
+
+  在子类中构建与父类相同的方法名、输入参数、输出参数、访问权限（权限可以扩大），并且父类、子类都是静态方法，此种行为叫做隐藏（Hide），它与覆写有两点不同：
+
+  表现形式不同。隐藏用于静态方法，覆写用于非静态方法。在代码上的表现是：@Override 注解可以用于覆写，不能用于隐藏。
+
+  职责不同。隐藏的目的是为了抛弃父类静态方法，重现子类方法。而覆写则是将父类的行为增强或减弱，延续父类的职责。
+
+  通过实例对象访问静态方法或静态属性不是好习惯，它给代码带来了“坏味道”。
+
+* 建议 34：构造函数尽量简化
+
+  ```java
+  abstract class Server {
+      public final static int DEFAULT_PORT = 8090;
+      public Server() {
+          int port = getPort();
+      }
+      protected abstract int getPort();
+  }
+  class SimpleServer extends Server {
+      private int port = 100;
+      public SimpleServer(int port) {
+          this.port = port;
+      }
+      @Override
+      protected int getPort() {
+          return Math.random() > 0.5 ? port : DEFAULT_PORT;
+      }
+  }
+  main() {
+      new SimpleServer(8080);
+  }
+  ```
+
+  子类实例化时，会首先初始化父类（注意这里是初始化，可不是生成父类对象），也就是初始化父类的变量，调用父类的构造函数，然后才会初始化子类的变量，调用子类自己的构造函数，最后生成一个实例对象。
+
+* 建议 35：避免在构造函数中初始化其他类
+
+* 建议 36：使用构造代码块精炼程序
+
+  用大括号把多行代码封装在一起，形成一个独立的数据体，实现特定算法的代码集合即为代码块，一般来说代码块是不能单独运行的，必须要有运行体。在 Java 中一共有四种类型的代码块：
+
+  普通代码块：就是在方法后面使用“{}”括起来的代码片段，它不能单独执行，必须通过方法名调用执行。
+
+  静态代码块：在类中使用 static 修饰，并使用“{}”括起来的代码片段，用于静态变量的初始化或对象创建前的环境初始化。
+
+  同步代码块：使用 synchronized 关键字修饰，并使用“{}”括起来的代码片段，它表示同一时间只能有一个线程进入到该方法中，是一种多线程保护机制。
+
+  构造代码块：在类中没有任何的前缀和后缀，并使用“{}”括起来的代码片段。
+
+  构造代码块会在每个构造函数内首先执行（需要注意的是：构造代码块不是在构造函数之前运行的，它依托于构造函数的执行）。
+
+* 建议 37：构造代码块会想你所想
+
+  编译器会把构造代码块插入到每一个构造函数中，但是有一个例外的情况没有说明：如果遇到 this 关键字（也就是构造函数调用自身其他的构造函数时）则不插入构造代码块。
+
+  构造代码块是为了提取构造函数的共同量，减少各个构造函数的代码而产生的，因此，Java 就很聪明地认为把代码块插入到没有 this 方法的构造函数中即可，而调用其他构造函数的则不插入，确保每个构造函数只执行一次构造代码块。
+
+* 建议 38：使用静态内部类提高封装性
+
+  Java 中的嵌套类分为两种：静态内部类和内部类。
+
+  静态内部类有两个优点：加强类的封装性和提高了代码的可读性。
+
+  提高了封装性。从代码位置上来讲，静态内部类放置在外部类内，其代码层意义就是：静态内部类是外部类的子行为或子属性，两者直接保持着一定的关系。
+
+  提高代码的可读性。
+
+  形似内部，神似外部。静态内部类虽然存在于外部类内，而且编译后的类文件名也包含外部类（格式是：外部类+$+内部类），但是它可以脱离外部类存在。
+
+  静态内部类与普通内部类有什么区别呢？
+
+  静态内部类不持有外部类的引用
+
+  在普通内部类中，我们可以直接访问外部类的属性、方法，即使是 private 类型也可以访问，这是因为内部类持有一个外部类的引用，可以自由访问。而静态内部类，则只可以访问外部类的静态方法和静态属性（如果是 private 权限也能访问，这是由其代码位置所决定的），其他则不能访问。
+
+  静态内部类不依赖外部类
+
+  普通内部类与外部类之间是相互依赖的关系，内部类实例不能脱离外部类实例，也就是说它们会同生同死，一起声明，一起被垃圾回收器回收。而静态内部类是可以独立存在的，即使外部类消亡了，静态内部类还是可以存在的。
+
+  普通内部类不能声明 static 的方法和变量
+
+  普通内部类不能声明 static 的方法和变量，常量（也就是 final static 修饰的属性）还是可以的，而静态内部类形似外部类，没有任何限制。
+
+* 建议 39：使用匿名类的构造函数
+
+  `List list = new ArrayList() {};`
+
+  代表的是一个匿名类的声明和赋值，它定义了一个继承于 ArrayList 的匿名类，只是没有任何的覆写方法而已，其代码类似于：
+
+  ```java
+  class Sub extends ArrayList {}
+  List list = new Sub(); 
+  ```
+
+  `List list = new ArrayList() {{}};`
+
+  它的代码类似于：
+
+  ```java
+  class Sub extends ArrayList {
+      {
+          // 构造代码块
+      }
+  }
+  List list = new Sub();
+  ```
+
+  初始化块就是匿名类的构造函数。当然，一个类中的构造函数块可以是多个，也就是说可以出现如下代码：`List list = new ArrayList() {{} {} {}};`
+
+* 建议 40：匿名类的构造函数很特殊
+
+  一般类（也就是具有显式名字的类）的所有构造函数默认都是调用父类的无参构造的，而匿名类因为没有名字，只能由构造代码块代替，也就无所谓的有参和无参构造函数了，它在初始化时直接调用了父类的同参数构造，然后再调用了自己的构造代码块。
+
+* 建议 41：让多重继承成为现实
+
+  ```java
+  interface Father {
+      public int strong();
+  }
+  interface Mother {
+      public int kind();
+  }
+  class FatherImpl extends Father {
+      public int strong() {
+          return 8;
+      }
+  }
+  class MotherImpl extends Mother {
+      public int kind() {
+          return 8;
+      }
+  }
+  class Son extends FatherImpl implements Mother {
+      @Override
+      public int strong() {
+          return super.strong() + 1;
+      }
+      @Override
+      public int kind() {
+          return new MotherSpecial().kind();
+      }
+      // 成员内部类（实例内部类）
+      private class MotherSpecial extends MotherImpl {
+          @Override
+          public int kind() {
+              return super.kind() - 1;
+          }
+      }
+  }
+  class Daughter extends MotherImpl implements Father {
+      @Override
+      public int strong() {
+          // 匿名内部类
+          return new FatherImpl() {
+              @Override
+              public int strong() {
+                  return super.strong() - 2;
+              }
+          }.strong();
+      }
+  }
+  ```
+
+  内部类可以继承一个与外部类无关的类，保证了内部类的独立性，正是基于这一点，多重继承才会成为可能。
+
+* 建议 42：让工具类不可实例化
+
+  ```java
+  public final class UtilsClass {
+      private UtilsClass() {
+          throw new Error("Don't let anyone instantiate this class.");
+      }
+  }
+  ```
+
+* 建议 43：避免对象的浅拷贝
+
+  浅拷贝规则如下：
+
+  基本类型：如果变量是基本类型，则拷贝其值。
+
+  对象：如果变量是一个实例对象，则拷贝地址引用，也就是说此时新拷贝出的对象与原有对象共享该实例变量，不受访问权限的限制。
+
+  String 字符串：这个比较特殊，拷贝的也是一个地址，是个引用，但是在修改时，它会从字符串池中重新生成新的字符串，原有的字符串对象保持不变，在此处可以认为 String 是一个基本类型。
+
+* 建议 44：推荐使用序列化实现对象的拷贝
+
+  在内存中通过字节流的拷贝来实现，也就是把母对象写到一个字节流中，再从字节流中将其读出来，这样就可以重建一个新对象了，该新对象与母对象之间不存在引用共享的问题，也就相当于深拷贝了一个新对象。
+
+  ```java
+  public class CloneUtils {
+      public static <T extends Serializable> T clone(T obj) {
+          T cloneObj = null;
+          try {
+              ByteArrayOutputStream baos = new ByteArrayOutputStream();
+              ObjectOutputStream oos = new ObjectOutputStream(baos);
+              oos.writeObject(obj);
+              oos.close();
+              ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+              ObjectInputStream ois = new ObjectInputStream(bais);
+              cloneObj = ois.readObject();
+              ois.close();
+          } catch (Exception e) {
+              e.printStackTrace();
+          }
+          return cloneObj;
+      }
+  }
+  ```
+
+  此工具类要求被拷贝的对象必须实现 Serializable 接口，否则是没办法拷贝的。
+
+  采用序列化方式拷贝时还有一个更简单的办法，即使用 Apache 下 commons 工具包中的 SerializationUtils 类，直接使用更加简洁方便。
+
+* 建议 45：覆写 equals 方法时不要识别不出自己
+
+  ```java
+  class Person {
+      private String name;
+      @Override
+      public boolean equals(Object obj) {
+          if (obj instanceof Person) {
+              Person p = (Person) obj;
+              return name.equalsIgnoreCase(p.getName());
+              // return name.equalsIgnoreCase(p.getName().trim());
+          }
+          return false;
+      }
+  }
+  ```
+
+  它违背了 equals 方法的自反性原则：对于任何非空引用 x，x.equals(x) 应该返回 true。
+
+* 建议 46：equals 应该考虑 null 值场景
+
+  ```java
+  @Override
+  public boolean equals(Object obj) {
+      if (obj instanceof Person) {
+          Person p = (Person) obj;
+          if (p.getName() == null || name == null) {
+              return false;
+          } else {
+              return name.equalsIgnoreCase(p.getName());
+          }
+      }
+      return false;
+  }
+  ```
+
+  覆写 equals 没有遵循对称性原则：对于任何引用 x 和 y 的情形，如果 x.equals(y) 返回 true，那么 y.equals(x) 也应该返回 true。
+
+* 建议 47：在 equals 中使用 getClass 进行类型判断
+
+  传递性原则是指对于实例对象 x、y、z 来说，如果 x.equals(y) 返回 true，y.equals(z) 返回 true，那么 x.equals(z) 也应该返回 true。
+
+  ```java
+  @Override
+  public boolean equals(Object obj) {
+      if (obj != null && obj.getClass() == this.getClass()) {
+          Person p = (Person) obj;
+          if (p.getName() == null || name == null) {
+              return false;
+          } else {
+              return name.equalsIgnoreCase(p.getName());
+          }
+      }
+      return false;
+  }
+  ```
+
+  在覆写 equals 时建议使用 getClass 进行类型判断，而不要使用 instanceof。
+
+* 建议 48：覆写 equals 方法必须覆写 hashCode 方法
+
+  HashCodeBuilder 是 org.apache.commons.lang.builder 包下的一个哈希码生成工具。
+
+* 建议 49：推荐覆写 toString 方法
+
+  使用 apache 的 commons 工具包中的 ToStringBuilder 类。
+
+* 建议 50：使用 package-info 类为包服务
+
+  声明友好类和包内访问常量
+
+  ```java
+  // package-info.java
+  class PkgClass {
+      public void test() {}
+  }
+  class PkgConst {
+      static final String PACKAGE_CONST = "";
+  }
+  ```
+
+  为在包上标注注解提供便利
+
+  比如我们要写一个注解（Annotation），查看一个包下的所有对象，只要把注解标注到 package-info 文件中即可。
+
+  提供包的整体注释说明
+
+  如果是分包开发，也就是说一个包实现了一个业务逻辑或功能点或模块或组件，则该包需要有一个很好的说明文档，说明这个包是做什么用的，版本变迁历史，与其他包的逻辑关系等，package-info 文件的作用在此就发挥出来了，这些都可以直接定义到此文件中，通过 javadoc 生成文档时，会把这些说明作为包文档的首页，让读者更容易对该包有一个整体的认识。
+
+* 建议 51：不要主动进行垃圾回收
+
+  System.gc 要停止所有的响应（Stop the world），才能检查内存中是否有可回收的对象，这对一个应用系统来说风险极大。
+
