@@ -823,3 +823,75 @@
 
   System.gc 要停止所有的响应（Stop the world），才能检查内存中是否有可回收的对象，这对一个应用系统来说风险极大。
 
+### 第四章 字符串
+
+* 建议 52：推荐使用 String 直接量赋值
+
+  在字符串池中所容纳的都是 String 字符串对象，它的创建机制是这样的：
+
+  创建一个字符串时，首先检查池中是否有字面值相等的字符串，如果有，则不再创建，直接返回池中该对象的引用，若没有则创建之，然后放到池中，并返回新建对象的引用。
+
+  intern 会检查当前的对象在对象池中是否有字面值相同的引用对象，如果有则返回池中对象，如果没有则放置到对象池中，并返回当前对象。
+
+  String 类是一个不可变对象其实有两层意思：一是 String 类是 final 类，不可继承，不可能产生一个 String 的子类；二是 String 类提供的所有方法中，如果有 String 返回值，就会新建一个 String 对象，不对原对象进行修改，这也就保证了原对象是不可改变的。
+
+* 建议 53：注意方法中传递的参数要求
+
+  replaceAll 传递的第一个参数是正则表达式。
+
+* 建议 54：正确使用 String、StringBuilder、StringBuffer
+
+  String 类是不可改变的量，也就是创建后就不能再修改了，即使想通过 String 提供的方法来尝试修改，也是要么创建一个新的字符串对象，要么返回自己。
+
+  StringBuffer 是一个可变字符序列，它与 String 一样，在内存中保存的都是一个有序的字符序列（char 类型的数组），不同点是 StringBuffer 对象的值是可改变的。
+
+  StringBuilder 与 StringBuffer 基本相同，都是可变字符序列，不同点是：StringBuffer 是线程安全的，StringBuilder 是线程不安全的。
+
+  在性能方面，由于 String 类的操作都是产生新的 String 对象，而 StringBuilder 和 StringBuffer 只是一个字符数组的再扩容而已，所以 String 类的操作要远慢于 StringBuilder 和 StringBuffer。
+
+* 建议 55：注意字符串的位置
+
+  Java 对加号的处理机制：在使用加号进行计算的表达式中，只要遇到 String 字符串，则所有的数据都会转换为 String 类型进行拼接，如果是原始类型，则直接拼接，如果是对象，则调用 toString 方法的返回值然后拼接。
+
+* 建议 56：自由选择字符串拼接方法
+
+  对一个字符串进行拼接有三种办法：加号、concat 方法以及 StringBuilder 的 append 方法。
+
+  在字符串拼接方式中，append 方法最快，concat 方法次之，加号最慢。
+
+  "+"方法拼接字符串
+
+  编译器对字符串的加号做了优化，它会使用 StringBuilder 的 append 方法进行追加。
+
+  `str = new StringBuilder(str).append("c").toString();`
+
+  它与纯粹使用 StringBuilder 的 append 方法是不同的：一是每次循环都会创建一个 StringBuilder 对象，二是每次执行完毕都要调用 toString 方法将其转换为字符串——它的执行时间就是耗费在这里了！
+
+  concat 方法拼接字符串
+
+  整体看上去就是一个数组拷贝，虽然在内存中的处理都是原子性操作，速度非常快，不过，每次的 concat 操作都会新创建一个 String 对象，这就是 concat 速度慢下来的真正原因。
+
+  append 方法拼接字符串
+
+  整个 append 方法都在做字符数组处理，加长，然后数组拷贝，这些都是基本的数据处理，没有新建任何对象，所以速度也就最快了！
+
+* 建议 57：推荐在复杂字符串操作中使用正则表达式
+
+* 建议 58：强烈建议使用 UTF 编码
+
+  Java 程序涉及的编码包括两部分：
+
+  Java 文件编码：操作系统默认的格式或 IDE 的设置。
+
+  Class 文件编码：通过 javac 命令生成的后缀名为 .class 的文件是 UTF-8 编码的 UNICODE 文件，这在任何操作系统上都是一样的，只要是 class 文件就会是 UNICODE 格式。需要说明的是，UTF 是 UNICODE 的存储和传输格式，它是为了解决 UNICODE 的高位占用冗余空间而产生的，使用 UTF 编码就标志着字符集使用的是 UNICODE。
+
+* 建议 59：对字符串排序持一种宽容的心态
+
+  Arrays 工具类的默认排序是通过数组元素的 compareTo 方法进行比较的。
+
+  String 类的 compareTo，先取得字符串的字符数组，然后一个一个地比较大小，注意这里是字符比较，也就是 UNICODE 码值的比较。
+
+  ```java
+  Comparator c = Collator.getInstance(Locale.CHINA);
+  Arrays.sort(strs, c);
+  ```
