@@ -1092,3 +1092,146 @@
   工具类：java.util.Arrays、java.util.Collections
 
   扩展类：Apache 的 commons-collections 扩展包，Google 的 google-collections 扩展包
+
+### 第六章 枚举和注解
+
+* 建议 83：推荐使用枚举定义常量
+
+  枚举的优点主要表现在以下四个方面：
+
+  枚举常量更简单
+
+  枚举常量只需要定义每个枚举项，不需要定义枚举值，而接口常量（或类常量）则必须定义值，否则编译不通过，即使我们不需要关注其值是多少也必须定义。
+
+  枚举常量属于稳态型
+
+  在编译期间限定类型，不允许发生越界的情况。
+
+  枚举具有内置方法
+
+  每个枚举都是 java.lang.Enum 的子类，该基类提供了诸如获得排序值的 ordinal 方法、compareTo 比较方法等，大大简化了常量的访问（通过 values 方法获得所有的枚举项）。
+
+  枚举可以自定义方法
+
+  枚举常量不仅可以定义静态方法，还可以定义非静态方法，而且还能够从根本上杜绝常量类被实例化。
+
+  每个枚举项都是该枚举的一个实例，那我们在枚举中定义的静态方法既可以在类中引用，也可以在实例中引用。
+
+  枚举类型是不能有继承的，也就是说一个枚举常量定义完毕后，除非修改重构，否则无法做扩展，而接口常量和类常量则可以通过继承进行扩展。
+
+* 建议 84：使用构造函数协助描述枚举项
+
+  一般来说，我们经常使用的枚举项只有一个属性，即排序号，其默认值是从 0,1,2...。但是除了排序号，枚举还有一个（或多个）属性：枚举描述，它的含义是通过枚举的构造函数，声明每个枚举项（也就是枚举的实例）必须具有的属性和行为，这是对枚举项的描述或补充，目的是使枚举项表述的意义更加清晰明确。
+
+* 建议 85：小心 switch 带来的空值异常
+
+  Java 的 switch 语句只能判断 byte、short、char、int 类型（JDK7 已经允许使用 String 类型）。
+
+  编译器判断出 switch 语句后的参数是枚举类型，然后就会根据枚举的排序值继续匹配（enum.ordinal()）。enum 变量是 null 值，无法执行 ordinal 方法，于是报空指针异常了。
+
+* 建议 86：在 switch 的 default 代码块中增加 AssertionError 错误
+
+  这样可以保证在增加一个枚举项的情况下，若其他代码未修改，运行期马上就会报错，这样一来就很容易查找到错误，方便立刻排除。
+
+* 建议 87：使用 valueOf 前必须进行校验
+
+  valueOf 方法会把一个 String 类型的名称转变为枚举项，也就是在枚举项中查找出字面值与该参数相等的枚举项。
+
+  valueOf 方法先通过反射从枚举类的常量声明中查找，若找到就直接返回，若找不到则抛出无效参数异常（IllegalArgumentException）。
+
+  ```java
+  enum Season {
+      Spring, Summer, Autumn, Winter;
+      public static boolean contains(String name) {
+          Season[] season = values();
+          for (Season s : season) {
+              if (s.name().equals(name)) {
+                  return true;
+              }
+          }
+          return false;
+      }
+  }
+  ```
+
+  Season 枚举具备了静态方法 contains 后，就可以在 valueOf 前判断一下是否包含指定的枚举名称了，若包含则可以通过 valueOf 转换为 Season 枚举，若不包含则不转换。
+
+* 建议 88：用枚举实现工厂方法模式更简洁
+
+  枚举非静态方法实现工厂方法模式
+
+  ```java
+  public enum CarFactory {
+      FordCar, BuickCar;
+      public Car create() {
+          switch (this) {
+              case FordCar:
+                  return new FordCar();
+              case BuickCar:
+                  return new BuickCar();
+              default:
+                  throw new AssertionError();
+          }
+      }
+  }
+  ```
+
+  通过抽象方法生成产品
+
+  ```java
+  public enum CarFactory {
+      FordCar {
+          @Override
+          public Car create() {
+              return new FordCar();
+          }
+      },
+      BuickCar {
+          @Override
+          public Car create() {
+              return new BuickCar();
+          }
+      };
+      public abstract Car create();
+  }
+  ```
+
+  避免错误调用的发生
+
+  一般工厂方法模式中的生产方法接收三种类型的参数：类型参数、String 参数、int 参数，这三种参数都是宽泛的数据类型，很容易产生错误（比如边界问题、null 值问题），而且出现这类错误编译器还不会报警。
+
+  而使用枚举类型的工厂方法模式就不存在该问题了，不需要传递任何参数。
+
+  性能好，使用便捷
+
+  降低类间耦合
+
+  不管生产方法接收的是 Class、String 还是 int 的参数，都会成为客户端类的负担，这些类并不是客户端需要的，而是因为工厂方法的限制必须输入的。这严重违背了迪米特原则，也就是最少知识原则：一个对象应该对其他对象有最少的了解。
+
+* 建议 89：枚举项的数量限制在 64 个以内
+
+  Java 提供了两个枚举集合：EnumSet 和 EnumMap，这两个集合的使用方法都比较简单，EnumSet 表示其元素必须是某一枚举的枚举项，EnumMap 表示 Key 值必须是某一枚举的枚举项。
+
+  `EnumSet<Const> cs = EnumSet.allOf(Const.class);`
+
+  当枚举项数量小于等于 64 时，创建一个 RegularEnumSet 实例对象，大于 64 时则创建一个 JumboEnumSet 实例对象。
+
+  我们知道枚举项的排序值 ordinal 是从 0,1,2... 依次递增的，没有重号，没有跳号，RegularEnumSet 就是利用这一点把每个枚举项的 ordinal 映射到一个 long 类型数字的每个位上的。
+
+  想想看，一个 long 类型的数字包含了所有的枚举项，其效率和性能肯定是非常优秀的。
+
+  我们知道 long 类型是 64 位的，所以 RegularEnumSet 类型也就只能负责枚举项数量不大于 64 的枚举。
+
+  JumboEnumSet 类把枚举项按照 64 个元素一组拆分成了多组，每组都映射到一个 long 类型的数字上，然后该数字再放置到 elements 数组中。
+
+* 建议 90：小心注解继承
+
+  @Inherited，它表示一个注解是否可以自动被继承。
+
+  采用 @Inherited 元注解有利有弊，利的地方是一个注解只要标注到父类，所有的子类都会自动具有与父类相同的注解，整齐、统一而且便于管理，弊的地方是单单阅读子类代码，我们无从知道为何逻辑会被改变，因为子类没有明显标注该注解。
+
+* 建议 91：枚举和注解结合使用威力更大
+
+* 建议 92：注意 @Override 不同版本的区别
+
+  1.5 版中的 @Override 是严格遵守覆写的定义：子类方法与父类方法必须具有相同的方法名、输入参数、输出参数（允许子类缩小）、访问权限（允许子类扩大），父类必须是一个类，不能是一个接口，否则不能算是覆写。而这在 Java 1.6 开放了很多，实现接口的方法也可以加上 @Override 注解了，可以避免粗心大意导致方法名称与接口不一致的情况发生。
