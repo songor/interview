@@ -895,3 +895,200 @@
   Comparator c = Collator.getInstance(Locale.CHINA);
   Arrays.sort(strs, c);
   ```
+
+### 第五章 数组和集合
+
+* 建议 60：性能考虑，数组是首选
+
+  遍历计算时要做装箱、拆箱动作。
+
+  基本类型是在栈内存中操作的，而对象则是在堆内存中操作的，栈内存的特点是速度快，容量小，堆内存的特点是速度慢，容量大。
+
+* 建议 61：若有必要，使用变长数组
+
+  在实际开发中，如果确实需要变长的数据集，数组也是在考虑范围之内的，不能因固定长度而将其否定之。
+
+  `Arrays.copyOf(original, newLength);`
+
+* 建议 62：警惕数组的浅拷贝
+
+  通过 copyOf 方法产生的数组是一个浅拷贝，这与序列化的浅拷贝完全相同：基本类型是直接拷贝值，其他都是拷贝引用地址。需要说明的是，数组的 clone 方法也是与此相同的，同样是浅拷贝，而且集合的 clone 方法也都是浅拷贝。
+
+* 建议 63：在明确的场景下，为集合指定初始容量
+
+  每次扩容都是一次数组的拷贝，如果数据量很大，这样的拷贝会非常消耗资源，而且效率非常低下。
+
+* 建议 64：多种最值算法，适时选择
+
+  `Arrays.sort(data.clone());`
+
+  ```java
+  List<Integer> dataList = Arrays.asList(data);
+  TreeSet<Integer> ts = new TreeSet(dataList);
+  ts.lower(ts.last());
+  ```
+
+  数组不能剔除重复数据，但 Set 集合却是可以的，而且 Set 的子类 TreeSet 还能自动排序。
+
+* 建议 65：避开基本类型数组转换列表陷阱
+
+  ```java
+  // size 1
+  int[] data = {1, 2, 3, 4, 5};
+  Arrays.asList(data).size();
+  // size 5
+  Integer[] data = {1, 2, 3, 4, 5};
+  Arrays.asList(data).size();
+  ```
+
+  asList 方法输入的是一个泛型变长参数，我们知道基本类型是不能泛型化的，也就是说 8 个基本类型不能作为泛型参数，要想作为泛型参数就必须使用其所对应的包装类型。
+
+  在 Java 中，数组是一个对象，它是可以泛型化的，也就是说我们的例子是把一个 int 类型的数组作为了 T 的类型，所以转换后在 List 中就只有一个类型为 int 数组的元素了。
+
+* 建议 66：asList 方法产生的 List 对象不可更改
+
+  asList 返回的是一个长度不可变的列表，数组是多长，转换成的列表也就是多长，换句话说此处的列表只是数组的一个外壳，不再保持列表动态变长的特性。
+
+* 建议 67：不同的列表选择不同的遍历方法
+
+  ```java
+  public static int average(List<Integer> list) {
+      int sum = 0;
+      if (list instanceof RandomAccess) {
+          // ArrayList
+          for (int i = 0, size = list.size(); i < size; i++) {
+              sum += list.get(i);
+          }
+      } else {
+          // LinkedList
+          for (int i : list) {
+              sum += i;
+          }
+      }
+      return sum / list.size();
+  }
+  ```
+
+  ArrayList 实现了 RandomAccess 接口，这也就标志着 ArrayList 是一个可以随机存取的列表。
+
+  Java 中的 foreach 语法是 iterator 的变形用法。
+
+  为了使用迭代器就需要强制建立一种互相“知晓”的关系，比如上一个元素可以判断是否有下一个元素，以及下一个元素是什么等关系，这也就是通过 foreach 遍历耗时的原因。
+
+  推荐使用下标方式遍历 => 为了使用迭代器就需要强制建立一种互相“知晓”的关系，这就是通过foreach遍历耗时的原因 -> LinkedList使用迭代器效率更高 => node方法查找指定下标的节点，判断输入的下标与中间值（size >> 1）的关系，小于中间值则从头开始正向搜索，大于中间值则从尾节点反向搜索
+
+* 建议 68：频繁插入和删除时使用 LinkedList
+
+  元素拷贝过程 / 引用指针的变更
+
+  LinkedList 这种顺序存取列表的元素定位方式会折半遍历，这是一个极耗时的操作。而 ArrayList 的修改动作则是数组元素的直接替换，简单高效。
+
+* 建议 69：列表相等只需关心元素数据
+
+  `AbstractList.equals()`
+
+  列表只是一个容器，只要是同一种类型的容器（如 List），不用关心容器的细节差别（如 ArrayList 与 LinkedList），只要确定所有的元素数据相等，那这两个列表就是相等的。
+
+* 建议 70：子列表只是原列表的一个视图
+
+  它返回的 SubList 类也是 AbstractList 的子类，其所有的方法如 get、set、add、remove 等都是在原始列表上的操作，它自身并没有生成一个数组或是链表，也就是子列表只是原列表的一个视图（View），所有的修改动作都反映在了原列表上。
+
+  通过 ArrayList 构造函数创建的 List 对象实际上是新列表，它是通过数组的 copyOf 动作生成的，所生成的列表与原列表之间没有任何关系（虽然是浅拷贝，但元素类型是 String，也就是说元素是深拷贝的）。
+
+* 建议 71：推荐使用 subList 处理局部列表
+
+  `list.subList(fromIndex, toIndex).clear();`
+
+  subList 返回的 List 是原始列表的一个视图，删除这个视图中的所有元素，最终就会反映到原始列表上。
+
+* 建议 72：生成子列表后不要再操作原列表
+
+  ```java
+  if (modCount != expectedModCount) {
+      throw new ConcurrentModificationException();
+  }
+  ```
+
+  通过 Collections.unmodifiableList 方法设置列表为只读状态。
+
+  只要生成的子列表多于一个，则任何一个子列表就都不能修改了，否则就会抛出 ConcurrentModificationException。
+
+* 建议 73：使用 Comparator 进行排序
+
+  在 Java 中，要想给数据排序，有两种实现方式，一种是实现 Comparable 接口，一种是实现 Comparator 接口。
+
+  `Collections.sort(List<T> list);`
+
+  `Collections.reverse(List<T> list);`
+
+  `Collections.sort(List<T> list, Comparator<? super T> c);`
+
+  `Collections.sort(List<T> list, Collections.reverseOrder(Comparator<T> cmp));`
+
+  使用 apache 工具类 CompareToBuilder 来简化处理。
+
+  Comparable 接口可以作为实现类的默认排序法，Comparator 接口则是一个类的扩展排序工具。
+
+* 建议 74：不推荐使用 binarySearch 对列表进行检索
+
+  对一个列表进行检索时，我们使用得最多的是 indexOf 方法。
+
+  二分法查找必须要先排序，这是二分法查找的首要条件。
+
+* 建议 75：集合中的元素必须做到 compareTo 和 equals 同步
+
+  indexOf 依赖 equals 方法查找，binarySearch 则依赖 compareTo 方法查找。
+
+  equals 是判断元素是否相等，compareTo 是判断元素在排序中的位置是否相同。
+
+  既然一个是决定排序位置，一个是决定相等，那我们就应该保证当排序位置相同时，其 equals 也相同，否则就会产生逻辑混乱。
+
+* 建议 76：集合运算时使用更优雅的方式
+
+  并集：`list1.addAll(list2);`
+
+  交集：`list1.retainAll(list2);`
+
+  差集：`list1.removeAll(list2);`
+
+  无重复的并集：`list1.addAll(list2.removeAll(list1));`
+
+* 建议 77：使用 shuffle 打乱列表
+
+* 建议 78：减少 HashMap 中元素的数量
+
+  HashMap 比 ArrayList 多了一个层 Entry 的底层对象封装，多占用了内存，并且它的扩容策略是 2 倍长度的递增，同时还会依据阈值判断规则进行判断，因此相对于 ArrayList 来说，他就会出现内存溢出。
+
+* 建议 79：集合中的哈希码不要重复
+
+  HashMap 每次增加元素时都会先计算其哈希码，然后使用 hash 方法再次对 hashCode 进行抽取和统计，同时兼顾哈希码的高位和低位信息产生一个唯一值，也就是说 hashCode 不同，hash 方法返回的值也不同。之后再通过 indexFor 方法与数组长度做一次与运算，即可计算出其在数组中的位置，简单地说，hash 方法和 indexFor 方法就是把哈希码转变成数组的下标。
+
+  `int h; return (key == null) ? 0 : (h = key.hashCode()) ^ (h >>> 16);`
+
+  `(n - 1) & hash`
+
+* 建议 80：多线程使用 Vector 或 HashTable
+
+  基本上所有的集合类都有一个叫做快速失败（Fail-Fast）的校验机制，当一个集合在被多个线程修改并访问时，就可能会出现 ConcurrentModificationException 异常，这是为了确保集合方法一致而设置的保护措施，它的实现原理就是我们经常提到的 modCount 修改计数器：如果在读列表时，modCount 发生变化（也就是有其他线程修改）则会抛出 ConcurrentModificationException 异常。这与线程同步是两码事，线程同步是为了保护集合中的数据不被脏读、脏写而设置的。
+
+* 建议 81：非稳定排序推荐使用 List
+
+  SortedSet 接口只是定义了在给集合加入元素时将其进行排序，并不能保证元素修改后的结果，因此 TreeSet 适用于不变量的集合数据排序，比如 String、Integer 等类型，但不适用于可变量的排序，特别是不确定何时元素会发生变化的数据集合。
+
+  对于不变量的排序，例如直接量（也就是 8 个基本类型）、String 类型等，推荐使用 TreeSet，而对于可变量，例如我们自己写的类，可能会在逻辑处理中改变其排序关键值的，则建议使用 List 自行排序。
+
+* 建议 82：由点及面，一叶知秋——集合大家族
+
+  List：ArrayList、LinkedList、Vector、Stack
+
+  Set：EnumSet、HashSet、TreeSet
+
+  Map：TreeMap、HashMap、HashTable、Properties、EnumMap、WeakHashMap
+
+  Queue：ArrayBlockingQueue、PriorityBlockingQueue、LinkedBlockingQueue、PriorityQueue、ArrayDeque、LinkedBlockingDeque、LinkedList
+
+  数组
+
+  工具类：java.util.Arrays、java.util.Collections
+
+  扩展类：Apache 的 commons-collections 扩展包，Google 的 google-collections 扩展包
