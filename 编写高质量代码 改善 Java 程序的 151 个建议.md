@@ -1235,3 +1235,261 @@
 * 建议 92：注意 @Override 不同版本的区别
 
   1.5 版中的 @Override 是严格遵守覆写的定义：子类方法与父类方法必须具有相同的方法名、输入参数、输出参数（允许子类缩小）、访问权限（允许子类扩大），父类必须是一个类，不能是一个接口，否则不能算是覆写。而这在 Java 1.6 开放了很多，实现接口的方法也可以加上 @Override 注解了，可以避免粗心大意导致方法名称与接口不一致的情况发生。
+
+### 第七章 泛型和反射
+
+* 建议 93：Java 的泛型是类型擦除的
+
+  Java 的泛型在编译期有效，在运行期被删除，也就是说所有的泛型参数类型在编译后都会被清除掉。
+
+  在编译后所有的泛型类型都会做相应的转化。转换规则如下：
+
+  List\<T\> 擦除后的类型为 List。
+
+  List\<T\>[] 擦除后的类型为 List[]。
+
+  List\<? extends E\>、List\<? super E\> 擦除后的类型为 List\<E\>。
+
+  List\<T extends Serializable & Cloneable\> 擦除后为 List\<Serializable\>。
+
+  泛型的 class 对象是相同的
+
+  `List<String> ls.getClass() == List<Integer> li.getClass()`
+
+  泛型数组初始化时不能声明泛型类型
+
+  `List<String>[] listArray = new List<String>[]`
+
+  instanceof 不允许存在泛型参数
+
+  `list instanceof List<String>`
+
+* 建议 94：不能初始化泛型参数和数组
+
+  泛型类型在编译期被擦除，我们在类初始化时将无法获得泛型的具体参数。
+
+  ```java
+  class Foo<T> {
+      private T t = new T();
+      private T[] tArray = new T[5];
+      // 元素加入时向上转型为 Object 类型，取出时向下转型为 E 类型
+      private List<T> list = new ArrayList<T>();
+  }
+  ```
+
+  ```java
+  class Foo<T> {
+      private T t;
+      private T[] tArray;
+      public Foo(String className) {
+          Class<?> tType = Class.forName(className);
+          t = (T) tType.newInstance();
+          tArray = (T[]) Array.newInstance(tType, 5);
+      }
+  }
+  ```
+
+  类的成员变量是在类初始化前初始化的，所以要求在初始化前它必须具有明确的类型，否则就只能声明，不能初始化。
+
+* 建议 95：强制声明泛型的实际类型
+
+  通过强制泛型参数类型，我们明确了泛型方法的输入、输出参数类型，问题是我们要在什么时候明确泛型类型呢？一句话：无法从代码中推断出泛型类型的情况下，即可强制声明泛型类型。
+
+  ```java
+  class ArrayUtils {
+      public static <T> List<T> asList(T...t) {
+          List<T> list = new ArrayList<T>();
+          Collections.addAll(list, t);
+          return list;
+      }
+  }
+  main() {
+      List<String> list1 = ArrayUtils.asList("A", "B");
+      // 编译器会很“聪明”地推断出最顶层类 Object 就是其泛型类型
+      // List<Object> list2 = ArrayUtils.asList();
+      List list2 = ArrayUtils.asList();
+      // 如果期望 list2 是一个 Integer 类型的列表，而不是 Object 列表，强制声明泛型类型
+      // List<Integer> list2 = ArrayUtils.<Integer>asList();
+      // 当它发现多个元素的实际类型不一致时就会直接确认泛型类型是 Object
+      List list3 = ArrayUtils.asList(1, 2, 3.0);
+  }
+  ```
+
+* 建议 96：不同的场景使用不同的泛型通配符
+
+  泛型结构只参与“读”操作则限定上界（extends 关键字）
+
+  泛型结构只参与“写”操作则限定下界（super 关键字）
+
+  泛型结构既用作“读”操作又用作“写”操作，使用确定的泛型类型即可
+
+  对于是要限定上界还是限定下界，JDK 的 Collections.copy 方法是一个非常好的例子，它实现了把源列表中的所有元素拷贝到目标列表中对应的索引位置上，代码如下：
+
+  ```java
+  public static <T> void copy(List<? super T> dest, List<? extends T> src) {
+      for (int i = 0; i < srcSize; i++) {
+          dest.set(i, src.get(i));
+      }
+  }
+  ```
+
+* 建议 97：警惕泛型是不能协变和逆变的
+
+  在编程语言的类型框架中，协变和逆变是指宽类型和窄类型在某种情况下（如参数、泛型、返回值）替换或交换的特性，简单地说，协变（覆写、多态）是用一个窄类型替换宽类型，而逆变（重载）则是用一个宽类型替换窄类型。
+
+  泛型不支持协变
+
+  ```java
+  // 数组支持协变
+  Number[] n = new Integer[10];
+  // 编译不通过，泛型不支持协变
+  List<Number> ln = new ArrayList<Integer>();
+  ```
+
+  Java 为了保证运行期的安全性，必须保证泛型参数类型是固定的，所以它不允许一个泛型参数可以同时包含两种类型，即使是父子类关系也不行。
+
+  使用通配符模拟协变：`List<? extends Number> ln = new ArrayList<Integer>();`
+
+  通配符只是在编码期有效，运行期必须是一个确定类型。
+
+  泛型不支持逆变
+
+  Java 虽然可以允许逆变存在，但在对类型赋值上是不允许逆变的，你不能把一个父类实例对象赋值给一个子类类型变量，泛型自然也不允许此种情况发生了。
+
+* 建议 98：建议采用的顺序是 List\<T\>、List\<?\>、List\<Object\>
+
+* 建议 99：严格限定泛型类型采用多重界限
+
+  `public static <T extends Staff & Passenger> void discount(T t) {}`
+
+  使用 & 符号设定多重边界，指定泛型类型 T 必须是 Staff 和 Passenger 的共有子类型，此时变量 t 就具有了所有限定的方法和属性。
+
+  在 Java 泛型中，可以使用 & 符号关联多个上界并实现多个边界限定，而且只有上界才有此限定，下界没有多重限定的情况。
+
+* 建议 100：数组的真实类型必须是泛型类型的子类型
+
+  ```java
+  public static <T> T[] toArray(List<T> list) {
+      // 泛型是类型擦除的
+      // Object[] t = (Object[])new Object[list.size()];
+      T[] t = (T[])new Object[list.size()];
+      for (int i = 0, n = list.size(); i < n; i++) {
+          t[i] = list.get(i);
+      }
+      return t;
+  }
+  main() {
+      List<String> list = Arrays.asList("A", "B");
+      // ClassCastException
+      // for (String str : (String[])toArray(list)) {}
+      for (String str : toArray(list)) {}
+  }
+  ```
+
+  为什么 Object 数组不能向下转型为 String 数组
+
+  数组是一个容器，只有确保容器内的所有元素类型与期望的类型有父子关系时才能转换，Object 数组只能保证数组内的元素是 Object 类型，却不能确保它们都是 String 的父类型或子类，所以类型转换失败。
+
+  其实，要想把一个 Object 数组转换为 String 数组，只有 Object 数组的实际类型是 String 就可以了。
+
+  ```java
+  Object[] objArray = {"A", "B"};
+  // ClassCastException
+  String[] strArray = (String[])objArray;
+  
+  String[] ss = {"A", "B"};
+  Object[] objs = ss;
+  String[] strs = (String[])objs;
+  ```
+
+  当一个泛型类（特别是泛型集合）转变为泛型数组时，泛型数组的真实类型不能是泛型类型的父类型（比如顶层类 Object），只能是泛型类型的子类型（当然包括自身类型），否则就会出现类型转换异常。
+
+  ```java
+  public static <T> T[] toArray(List<T> list, Class<T> tClass) {
+      T[] t = (T[])Array.newInstance(tClass, list.size());
+      for (int i = 0, n = list.size(); i < n; i++) {
+          t[i] = list.get(i);
+      }
+      return t;
+  }
+  ```
+
+* 建议 101：注意 Class 类的特殊性
+
+  Java 使用一个元类（MetaClass）来描述加载到内存中的类数据，这就是 Class 类，它是一个描述类的类对象。因为 Class 类是“类中类”，也就有预示着它有很多特殊的地方：
+
+  无构造函数。Java 中的类一般都有构造函数，用于创建实例对象，但是 Class 类却没有构造函数，不能实例化，Class 对象是在加载类时由 Java 虚拟机通过调用类加载器中的 defineClass 方法自动构造的。
+
+  可以描述基本类型。虽然 8 个基本类型在 JVM 中并不是一个对象，它们一般存在于栈内存中，但是 Class 类仍然可以描述它们，例如可以使用 int.class 表示 int 类型的类对象。
+
+  其对象都是单例模式。一个 Class 的实例对象描述一个类，并且只描述一个类，反过来也成立，一个类只有一个 Class 实例对象。
+
+  `String.class.equals(new String().getClass())`
+
+  Class 类是 Java 的反射入口，只有在获得了一个类的描述对象后才能动态地加载、调用，一般获得一个 Class 对象有三种途径：
+
+  类属性方式，如 String.class。
+
+  对象的 getClass 方法，如 new String().getClass()。
+
+  forName 方法加载，如 Class.forName("java.lang.String")
+
+* 建议 102：适时选择 getDeclaredXXX 和 getXXX
+
+  getMethod 方法获得的是所有 public 访问级别的方法，包括从父类继承的方法，而 getDeclaredMethod 获得的是自身类的所有方法，包括公有方法、私有方法等，而且不受限于访问权限。
+
+* 建议 103：反射访问属性或方法时将 Accessible 设置为 true
+
+  Accessible 的属性并不是我们语法层级理解的访问权限，而是指是否更容易获得，是否进行安全检查。
+
+  动态修改一个类或方法或执行方法时都会受 Java 安全体制的制约，而安全的处理是非常消耗资源的（性能非常低），因此对于运行期要执行的方法或要修改的属性就提供了 Accessible 可选项：由开发者决定是否要逃避安全体系的检查。
+
+  当然了，由于取消了安全检查，也可以运行 private 方法、访问 private 私有属性了。
+
+* 建议 104：使用 forName 动态加载类文件
+
+  动态加载（Dynamic Loading）是指在程序运行时加载需要的类库文件，对 Java 程序来说，一般情况下，一个类文件在启动时或首次初始化时会被加载到内存中，而反射则可以在运行时再决定是否要加载一个类。
+
+  一个类文件只有在被加载到内存中后才可能生成实例对象，也就是说一个对象的生成必然会经过以下两个步骤：加载到内存中生成 Class 的实例对象；通过 new 关键字生成实例对象。
+
+  动态加载的意义在于：加载一个类即表示要初始化该类的 static 变量，特别是 static 代码块，在这里我们可以做大量的工作，比如注册自己，初始化环境等。
+
+  需要说明的是，forName 只是把一个类加载到内存中，并不保证由此产生一个实例对象，也不会执行任何方法，之所以会初始化 static 代码，那是由类加载机制所决定的。
+
+* 建议 105：动态加载不适合数组
+
+  如果 forName 要加载一个类，那它首先必须是一个类——8 个基本类型排除在外，它们不是一个具体的类；其次，它必须具有可追索的类路径，否则就会报 ClassNotFoundException。
+
+  在 Java 中，数组是一个非常特殊的类，虽然它是一个类，但没有定义类路径。
+
+  `Class.forName("[Ljava.lang.String;");`
+
+  `Class.forName("[J");`
+
+  只是把一个 String 类型的数组类和 long 类型的数组类加载到了内存中（如果内存中没有该类的话），并不能通过 newInstance 方法生成一个实例对象，因为它没有定义数组的长度，在 Java 中数组是定长的，没有长度的数组是不允许存在的。
+
+  `String[] strs = (String[])Array.newInstance(String.class, 8);`
+
+* 建议 106：动态代理可以使代理模式更加灵活
+
+* 建议 107：使用反射增加装饰模式的普适性
+
+* 建议 108：反射让模板方法模式更强大
+
+  模板方法模式的定义是：定义一个操作中的算法骨架，将一些步骤延迟到子类中，使子类不改变一个算法的结构即可重定义该算法的某些特定步骤。
+
+  在一般的模板方法模式中，抽象模板需要定义一系列的基本方法，一般都是 protected 访问级别的，并且是抽象方法，这标志着子类必须实现这些基本方法，这对子类来说既是一个约束也是一个负担。但是使用了反射后，不需要定义任何抽象方法，只需定义一个基本方法鉴别器即可加载符合规则的基本方法。
+
+  ```java
+  private boolean isInitDataMethod(Method m) {
+      return m.getName().startsWith("init")
+          && Modifier.isPublic(m.getModifiers())
+          && m.getReturnType().equals(Void.TYPE)
+          && !m.isVarArgs()
+          && !Modifier.isAbstract(m.getModifiers());
+  }
+  ```
+
+  Junit 4 之前要求测试的方法名必须是以 test 开头的，并且无返回值、无参数，而且被 public 修饰，其实现的原理与此非常相似。
+
+* 建议 109：不需要太多关注反射效率
