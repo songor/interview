@@ -1588,3 +1588,226 @@
 
   这样具备完整例外情景的逻辑就具备了 OO 的味道，任何一个事物的处理都可能产生非预期结果，问题是需要以何种手段来处理，如果不使用异常就需要依靠返回值的不同来进行处理了，这严重失去了面向对象的风格。
 
+### 第九章 多线程和并发
+
+* 建议 118：不推荐覆写 start 方法
+
+  多线程比较简单的实现方式是继承 Thread 类，然后覆写 run 方法，在客户端程序中通过调用对象的 start 方法即可启动一个线程，这是多线程程序的标准写法。
+
+  这里的关键是本地方法 start0，它实现了启动线程、申请栈内存、运行 run 方法、修改线程状态等职责，线程管理和栈内存管理都是由 JVM 负责的，如果覆盖了 start 方法，也就是撤消了线程管理和栈内存管理的能力。
+
+* 建议 119：启动线程前 stop 方法是不可靠的
+
+  Thread 类的 stop 方法会根据线程状态来判断是终结线程还是设置线程为不可运行状态，对于未启动的线程（线程状态为 NEW）来说，会设置其标志位为不可启动（stopBeforeStart），而其他的状态则是直接停止。
+
+  ```java
+  // 注意 start0 方法和 stop0 方法顺序
+  public synchronized void start() {
+      start0();
+      if (stopBeforeStart) {
+          stop0();
+      }
+  }
+  ```
+
+* 建议 120：不使用 stop 方法停止线程
+
+  stop 方法是过时的。
+
+  stop 方法会导致代码逻辑不完整：stop 方法是一种“恶意”的中断，一旦执行 stop 方法，即终止当前正在运行的线程，不管线程逻辑是否完整，这是非常危险的。
+
+  stop 方法会破坏原子逻辑：它丢弃所有的锁，导致原子逻辑受损。
+
+  interrupt 方法不能终止一个正在执行着的线程，它只会改变中断标志而已。
+
+  ```java
+  class SafeStropThread extends Thread {
+      @Override
+      public void run() {
+          while(!isInterrupted()) {
+              // Do something
+          }
+      }
+  }
+  ```
+
+  如果我们使用的是线程池（比如 ThreadPoolExecutor 类），那么可以通过 shutdown 方法逐步关闭池中的线程，它采用的是比较温和、安全的关闭线程方法。
+
+* 建议 121：线程优先级只使用三个等级
+
+  线程的优先级（Priority）决定了线程获得 CPU 运行的机会，优先级越高获得的运行机会越大，优先级越低获得的机会越小。
+
+  并不是严格遵照线程优先级别来执行的；优先级差别越大，运行机会差别越明显。
+
+  Java 是跨平台的系统，需要把这 10 个优先级映射成不同操作系统的优先级，于是界定了 Java 的优先级只是代表抢占 CPU 的机会大小，优先级越高，抢占 CPU 的机会越大，被优先执行的可能性越高，优先级相差不大，则抢占 CPU 的机会差别也不大。
+
+  在编码时直接使用优先级常量（MIN_PRIORITY、NORM_PRIORITY、MAX_PRIORITY），可以说在大部分情况下 MAX_PRIORITY 的线程会比 NORM_PRIORITY 的线程先运行，但是不能认为必然会先运行，不能把这个优先级作为核心业务的必然条件，Java 无法保证优先级高肯定会先执行，只能保证高优先级有更多的执行机会。
+
+* 建议 122：使用线程异常处理器提升系统可靠性
+
+  Java 1.5 版本以后在 Thread 类中增加了 setUncaughtExceptionHandler 方法，实现了线程异常的捕获和处理。
+
+* 建议 123：volatile 不能保证数据同步
+
+  线程在初始化时从主内存中加载所需的变量值到工作内存中，然后在线程运行时，如果是读取，则直接从工作内存中读取，若是写入则先写到工作内存中，之后再刷新到主存中，这是 JVM 的一个简单的内存模型，但是这样的结构在多线程的情况下有可能会出现问题，比如：A 线程修改变量的值，也刷新到了主存中，但 B、C 线程在此时间内读取的还是本地线程的工作内存，也就是说它们读取的不是最“新鲜”的值，此时就出现了不同线程持有的公共资源不同步的情况。
+
+  在一个变量前加上 volatile 关键字，可以确保每个线程对本地变量的访问和修改都是直接与主内存交互的，而不是与本线程的工作内存交互的，保证每个线程都能获得最“新鲜”的变量值。
+
+  volatile 关键字并不保证线程安全，它只能保证当线程需要该变量的值时能够获得最新的值，而不能保证多个线程修改的安全性。
+
+* 建议 124：异步运算考虑使用 Callable 接口
+
+  多线程应用有两种实现方式，一种是实现 Runnable 接口，另一种是继承 Thread 类，这两种方式都有缺点：run 方法没有返回值，不能抛出异常。
+
+  实现 Callable 接口的类，只是表明它是一个可调用的任务，并不表示它具有多线程运算能力，还是需要执行器来执行的。
+
+  Executors 是一个静态工具类，提供了异步执行器的创建能力，如单线程执行器 newSingleThreadExecutor、固定线程数量的执行器 newFixedThreadPool 等，一般它是异步计算的入口类。
+
+  Future 关注的是线程执行后的结果，比如有没有运行完毕，执行结果是多少等。
+
+* 建议 125：优先选择线程池
+
+  一个线程有五个状态：新建状态（New）、可运行状态（Runnable，也叫做运行状态）、阻塞状态（Blocked）、等待状态（Waiting）、结束状态（Terminated），线程的状态只能由新建转变为了运行态后才能被阻塞或等待，最后终结，不可能产生本末倒置的情况。
+
+  一个线程的运行时间分为三部分：T1 为线程启动时间，T2 为线程体的运行时间，T3 为线程销毁时间，如果一个线程不能被重复使用，每次创建一个线程都需要经过启动、运行、销毁这三个过程，那么这势必会增大系统的响应时间。
+
+  线程池的实现涉及以下三个名词：
+
+  工作线程（Worker）
+
+  线程池中的线程，只有两个状态：可运行状态和等待状态，在没有任务时它们处于等待状态，运行时可以循环地执行任务。
+
+  任务接口（Task）
+
+  这是每个任务必须实现的接口，以供工作线程调度器调度。这里有两种类型的任务，具有返回值（或异常）的 Callable 接口任务和无返回值并兼容旧版本的 Runnable 接口任务。
+
+  任务队列（Work Queue）
+
+  也叫做工作队列，用于存放等待处理的任务，一般是 BlockingQueue 的实现类，用来实现任务的排队处理。
+
+  线程池的创建过程：创建一个阻塞队列以容纳任务（`return new ThreadPoolExecutor(nThreads, nThreads, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());`），在第一次执行任务时创建足够多的线程（不超过许可线程数），并处理任务，之后每个工作线程自行从任务队列中获得任务（`while (task != null || (task = getTask()) != null) { runTask(task); }`），直到任务队列中的任务数量为 0 为止，此时，线程将处于等待状态（`while (count.get() == 0) { notEmpty.await(); }`），一旦有任务再加入到队列中，即唤醒工作线程进行处理（`c = count.getAndDecrement(); if (c > 1) notEmpty.signal();`），实现线程的可复用性。
+
+* 建议 126：适时选择不同的线程池来实现
+
+  Java 的线程池实现从根本上来说只有两个：ThreadPoolExecutor 和 ScheduledThreadPoolExecutor 类，这两个类还是父子关系，但是 Java 为了简化并行操作，还提供了一个Executors的静态类，它可以直接生成多种不同的线程池执行器。
+
+  corePoolSize：线程池启动后，在池中保持线程的最小数量。需要说明的是线程数量是逐步到达 corePoolSize 值的，而不是一次性地启动 corePoolSize 个线程。
+
+  maximumPoolSize：池中能够容纳的最大线程数量，如果超出，则使用 RejectedExecutionHandler 拒绝策略处理。
+
+  keepAliveTime：这里的生命期有两个约束条件，一是该参数针对的是超过 corePoolSize 数量的线程，二是处于非运行状态的线程。
+
+  unit：时间单位。
+
+  workQueue：当线程池中的线程都处于运行状态，而此时任务数量继续增加，则需要有一个容器来容纳这些任务，这就是任务队列。
+
+  threadFactory：定义如何启动一个线程，可以设置线程名称，并且可以确认是否为后台线程等。
+
+  handler：拒绝任务处理器。
+
+  线程池的管理是这样一个过程：首先创建线程池，然后根据任务的数量逐步将线程增大到 corePoolSize 数量，如果此时仍有任务增加，则放置到 workQueue 中，直到 workQueue 爆满为止，然后继续增加池中的线程数量，最终达到 maximumPoolSize，如果此时还有任务要增加进来，这就需要 handler 来处理了，或者丢弃新任务，或者拒绝新任务，或者挤占已有任务等。 
+
+  Executors 提供的几个创建线程池的便捷方法：
+
+  newSingleThreadExecutor
+
+  一个池中只有一个线程在运行，该线程永不超时。而且由于是一个线程，当有多个任务需要处理时，会将它们放置到一个无界阻塞队列中逐个处理。
+
+  `return new FinalizableDelegatedExecutorService (new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>()));`
+
+  newCachedThreadPool
+
+  任务队列使用了同步阻塞队列，这意味着向队列中加入一个元素，即可唤醒一个线程（新创建的线程或复用池中空闲线程）来处理，这种队列已经没有队列深度的概念了。
+
+  `return new ThreadPoolExecutor(0, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>());`
+
+  newFixedThreadPool
+
+  corePoolSize 和 maximumPoolSize 是相等的。
+
+  `return new ThreadPoolExecutor(nThreads, nThreads, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());`
+
+* 建议 127：Lock 和 synchronized 是不一样的
+
+  Lock 支持更细粒度的锁控制
+
+  读写锁（ReentrantReadWriteLock）允许同时有多个读操作但只允许有一个写操作，也就是当有一个写线程在执行时，所有的读线程和写线程都会阻塞，直到写线程释放锁资源为止，而读锁则可以有多个线程同时执行。
+
+  Lock 是无阻塞锁，synchronized 是阻塞锁
+
+  当线程 A 持有锁时，线程 B 也期望获得锁，此时，如果程序中使用的是显式锁，则 B 线程为等待状态，若使用的是内部锁则为阻塞状态。
+
+  Lock 可实现公平锁，synchronized 只能是非公平锁
+
+  JVM 从线程 B、C 中随机选择一个线程持有锁并使其获得执行权，这叫做非公平锁（因为它抛弃了先来后到的顺序）；若 JVM 选择了等待时间最长的一个线程持有锁，则为公平锁（保证每个线程的等待时间均衡）。需要注意的是，即使是公平锁，JVM 也无法准确做到“公平”。
+
+  显式锁默认是非公平锁，但可以在构造函数中加入参数 true 来声明出公平锁，而 synchronized 实现的是非公平锁，它不能实现公平锁。
+
+  Lock 是代码级别的，synchronized 是 JVM 级别的
+
+* 建议 128：预防线程死锁
+
+  达到线程死锁需要四个条件：
+
+  互斥条件：一个资源每次只能被一个线程使用。
+
+  资源独占条件：一个线程因请求资源而阻塞时，对已获得的资源保持不放。
+
+  不剥夺条件：线程已获得的资源在未使用完之前，不能强行剥夺。
+
+  循环等待条件：若干线程之间形成一种头尾相接的循环等待资源关系。
+
+  一般情况下可以按照以下两种方式来解决：避免或减少资源共享；使用自旋锁。
+
+* 建议 129：适当设置阻塞队列长度
+
+  阻塞队列的容量是固定的，非阻塞队列则是变长的。阻塞队列可以在声明时指定队列的容量，若指定了容量，则元素的数量不可超过该容量（java.lang.IllegalStateException），若不指定，队列的容量为 Integer 的最大值。
+
+  阻塞队列和非阻塞队列有此区别的原因是阻塞队列是为了容纳（或排序）多线程任务而存在的，其服务的对象是多线程应用，而非阻塞队列容纳的则是普通的数据元素。
+
+  ```java
+  public boolean add(E e) {
+      if (offer(e))
+          return true;
+      else
+          throw new IllegalStateException("Queue full");
+  }
+  public boolean offer(E e) {
+      checkNotNull(e);
+      final ReentrantLock lock = this.lock;
+      lock.lock();
+      try {
+          if (count == items.length)
+              return false;
+          else {
+              enqueue(e);
+              return true;
+          }
+      } finally {
+          lock.unlock();
+      }
+  }
+  public void put(E e) throws InterruptedException {
+      checkNotNull(e);
+      final ReentrantLock lock = this.lock;
+      lock.lockInterruptibly();
+      try {
+          while (count == items.length)
+              notFull.await();
+          enqueue(e);
+      } finally {
+          lock.unlock();
+      }
+  }
+  ```
+
+* 建议 130：使用 CountDownLatch 协调子线程
+
+  CountDownLatch 的作用是控制一个计数器，每个线程在运行完毕后会执行 countDown，表示自己运行结束，这对于多个子任务的计算特别有效，比如一个异步任务需要拆分成 10 个子任务执行，主任务必须要知道子任务是否完成，所有子任务完成后才能进行合并计算，从而保证了一个主任务的逻辑正确性。
+
+* 建议 131：CyclicBarrier 让多线程齐步走
+
+  CyclicBarrier 关卡可以让所有线程全部处于等待状态（阻塞），然后在满足条件的情况下继续执行，这就好比是一条起跑线，不管是如何到达起跑线的，只要到达这条起跑线就必须等待其他人员，待人员到齐后再各奔东西，CyclicBarrier 关注的是汇合点的信息，而不在乎之前或之后做何处理。
+
+  CyclicBarrier 可以用在系统的性能测试中，例如我们编写了一个核心算法，但不确定其可靠性和效率如何，我们就可以让 N 个线程汇集到测试原点上，然后“一声令下”，所有线程都引用该算法，即可观察出算法是否有缺陷。
+
