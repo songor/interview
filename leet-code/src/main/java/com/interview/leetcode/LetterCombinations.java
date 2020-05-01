@@ -94,11 +94,11 @@ public class LetterCombinations {
         map.put('8', new char[]{'t', 'u', 'v'});
         map.put('9', new char[]{'w', 'x', 'y', 'z'});
 
-        combin(digits, 0, new StringBuilder(), map);
+        combine(digits, 0, new StringBuilder(), map);
         return result;
     }
 
-    private static void combin(String digits, int depth, StringBuilder str, Map<Character, char[]> map) {
+    private static void combine(String digits, int depth, StringBuilder str, Map<Character, char[]> map) {
         // 触发结束条件
         if (depth == digits.length()) {
             result.add(str.toString());
@@ -110,7 +110,7 @@ public class LetterCombinations {
             // 做选择
             str.append(arr[i]);
             // 进入下一层决策树
-            combin(digits, depth + 1, str, map);
+            combine(digits, depth + 1, str, map);
             // 取消选择
             str.deleteCharAt(str.length() - 1);
         }
