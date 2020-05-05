@@ -392,7 +392,7 @@
 
     查询没有学全所有课程的同学的学号、姓名：
 
-    `select stu.student_id, stu.name from student stu, score s where stu.student_id = s.student_id group by s.student_id having count(\*) < (select count(\*) from course);`
+    `select stu.student_id, stu.name from student stu, score s where stu.student_id = s.student_id group by s.student_id having count(*) < (select count(*) from course);`
 
   * 统计相关
 
