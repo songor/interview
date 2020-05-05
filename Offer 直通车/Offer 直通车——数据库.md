@@ -30,6 +30,8 @@
 
   * B-Tree
 
+    ![B-Tree](https://github.com/songor/interview/blob/master/Offer%20%E7%9B%B4%E9%80%9A%E8%BD%A6/picture/B-Tree.png)
+
     根节点至少包括两个孩子
 
     树中每个节点最多包含 m 个孩子（m >= 2）
@@ -51,6 +53,8 @@
     每个节点中不仅包含数据的 key 值，还有 data 值。而每一个页的存储空间是有限的，如果 data 数据较大时将会导致每个节点（即一个页）能存储的 key 的数量很小，当存储的数据量很大时同样会导致 B-Tree 的深度较大，增大查询时的磁盘 I/O 次数，进而影响查询效率。
 
   * B+Tree
+
+    ![B+Tree](https://github.com/songor/interview/blob/master/Offer%20%E7%9B%B4%E9%80%9A%E8%BD%A6/picture/B%2BTree.png)
 
     B+Tree 是 B-Tree 的变体：
 
@@ -91,6 +95,8 @@
   * BitMap
 
 * 密集索引和稀疏索引
+
+  ![密集索引和稀疏索引](https://github.com/songor/interview/blob/master/Offer%20%E7%9B%B4%E9%80%9A%E8%BD%A6/picture/%E5%AF%86%E9%9B%86%E7%B4%A2%E5%BC%95%E5%92%8C%E7%A8%80%E7%96%8F%E7%B4%A2%E5%BC%95.png)
 
   MyISAM（稀疏索引），索引和数据分开存储，叶子节点保存行数据的物理地址。
 
