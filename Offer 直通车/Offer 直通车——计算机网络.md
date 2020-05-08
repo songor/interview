@@ -184,6 +184,8 @@
 
     ![客户端请求消息](https://github.com/songor/interview/blob/master/Offer%20%E7%9B%B4%E9%80%9A%E8%BD%A6/picture/%E5%AE%A2%E6%88%B7%E7%AB%AF%E8%AF%B7%E6%B1%82%E6%B6%88%E6%81%AF.png)
 
+    ![HTTP 请求结构](https://github.com/songor/interview/blob/master/Offer%20%E7%9B%B4%E9%80%9A%E8%BD%A6/picture/HTTP%20%E8%AF%B7%E6%B1%82%E7%BB%93%E6%9E%84.png)
+
     请求行：请求方法、URL、协议版本
 
     请求头部
@@ -193,6 +195,8 @@
   * HTTP 响应结构
 
     ![服务端响应消息](https://github.com/songor/interview/blob/master/Offer%20%E7%9B%B4%E9%80%9A%E8%BD%A6/picture/%E6%9C%8D%E5%8A%A1%E7%AB%AF%E5%93%8D%E5%BA%94%E6%B6%88%E6%81%AF.jpg)
+
+    ![HTTP 响应结构](https://github.com/songor/interview/blob/master/Offer%20%E7%9B%B4%E9%80%9A%E8%BD%A6/picture/HTTP%20%E5%93%8D%E5%BA%94%E7%BB%93%E6%9E%84.png)
 
     状态行：协议版本、状态码、状态码描述
 
