@@ -357,8 +357,10 @@
 
   Socket 是对 TCP/IP 协议的抽象。
 
-  Socket 通信流程：
+  Socket 通信流程
+
+  ![Socket 通信流程](https://github.com/songor/interview/blob/master/Offer%20%E7%9B%B4%E9%80%9A%E8%BD%A6/picture/Socket%20%E9%80%9A%E4%BF%A1%E6%B5%81%E7%A8%8B.png)
 
   server -> socket()；bind()；listen()；accept()；recv()；close()
-
+  
   client -> socket()；connect()；send()；close()
