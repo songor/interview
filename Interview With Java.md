@@ -55,7 +55,7 @@ The `org.springframework.beans` and `org.springframework.context` packages are t
 
 The `org.springframework.context.ApplicationContext` interface represents the Spring IoC container and is responsible for instantiating, configuring, and assembling the beans. The container gets its instructions on what objects to instantiate, configure, and assemble by reading configuration metadata. The configuration metadata is represented in XML, Java annotations, or Java code. It lets you express the objects that compose your application and the rich interdependencies between those objects.
 
-***What Does the Spring Bean Lifecycle Look Like?***
+[***What Does the Spring Bean Lifecycle Look Like?***]()
 
 Spring framework provides following **4 ways for controlling life cycle events** of a bean:
 
@@ -72,3 +72,40 @@ Custom `init()` and `destroy()` methods in bean configuration file
 Simply put, in the *Front Controller* design pattern*,* a single controller is **responsible for directing incoming *HttpRequests* to all of an application's other controllers and handlers**.
 
 Spring's *DispatcherServlet* implements this pattern and is, therefore, responsible for correctly coordinating the *HttpRequests* to their right handlers.
+
+[***Intro to Inversion of Control and Dependency Injection with Spring***](https://www.baeldung.com/inversion-control-and-dependency-injection-in-spring)
+
+**What Is Inversion of Control?**
+
+Inversion of Control is a principle in software engineering by which the control of objects or portions of a program is transferred to a container or framework.
+
+By contrast with traditional programming, in which our custom code makes calls to a library, IoC enables a framework to take control of the flow of a program and make calls to our custom code. To enable this, frameworks use abstractions with additional behavior built in. **If we want to add our own behavior, we need to extend the classes of the framework or plugin our own classes.**
+
+**What Is Dependency Injection?**
+
+Dependency injection is a pattern through which to implement IoC, where the control being inverted is the setting of object's dependencies.
+
+The act of connecting objects with other objects, or “injecting” objects into other objects, is done by an assembler rather than by the objects themselves.
+
+**The Spring IoC Container**
+
+In the Spring framework, the IoC container is represented by the interface *ApplicationContext*. The Spring container is responsible for instantiating, configuring and assembling objects known as *beans*, as well as managing their lifecycle.
+
+[***HandlerAdapters in Spring MVC***](https://www.baeldung.com/spring-mvc-handler-adapters#what-is-a-handleradapter)
+
+The servlet doesn't invoke the method directly – it basically serves as a bridge between itself and the handler objects, leading to a loosely coupling design.
+
+**Let the specific processor decouple from the DispatcherServlet in order to comply with the open and close principle**
+
+If we want to add a new type of processor, we must continue to write else if for processing, but the DispatcherServlet does not need to change any code after using the processor adapter, because it only depends on the HandlerAdapter, so that the DispatcherServlet and the specific Handler are uncoupled, they can be developed independently before.
+
+[***A Guide to Spring AbstractRoutingDatasource***](https://www.baeldung.com/spring-abstract-routing-data-source)
+
+```java
+public class ClientDataSourceRouter extends AbstractRoutingDataSource {
+    @Override
+    protected Object determineCurrentLookupKey() {
+        return ClientDatabaseContextHolder.getClientDatabase();
+    }
+}
+```
