@@ -109,3 +109,46 @@ public class ClientDataSourceRouter extends AbstractRoutingDataSource {
     }
 }
 ```
+
+### Spring Boot
+
+***FAT JAR 和 WAR 执行模块——spring-boot-loader***
+
+按照 Java 官方文档的规定，java -jar 命令引导的具体启动类必须配置在 MANIFEST.MF 资源的 Main-Class 属性中：
+
+[Launcher Manifest](https://docs.spring.io/spring-boot/docs/current/reference/html/appendix-executable-jar-format.html#executable-jar-launcher-manifest)
+
+MainMethodRunner#run() 方法
+
+```java
+public void run() throws Exception {
+	Class<?> mainClass = Thread.currentThread().getContextClassLoader().loadClass(this.mainClassName);
+	Method mainMethod = mainClass.getDeclaredMethod("main", String[].class);
+	mainMethod.invoke(null, new Object[] { this.args });
+}
+```
+
+JarLauncher 实际上是同进程内调用 Start-Class 类的 main(String[]) 方法，并且在启动前准备好 Class Path。
+
+There are three launcher subclasses (`JarLauncher`, `WarLauncher`, and `PropertiesLauncher`). Their purpose is to load resources (`.class` files and so on) from nested jar files or war files in directories (as opposed to those explicitly on the classpath).
+
+[The Executable Jar File Structure](https://docs.spring.io/spring-boot/docs/current/reference/html/appendix-executable-jar-format.html#executable-jar-jar-file-structure)
+
+[The Executable War File Structure](https://docs.spring.io/spring-boot/docs/current/reference/html/appendix-executable-jar-format.html#executable-jar-war-file-structure)
+
+WEB-INF/lib-provided 目录存放的是 \<scope\>provided\</scope\> 的 JAR 文件（spring-boot-loader、spring-boot-starter-tomcat）。
+
+传统的 Servlet 应用的 Class Path 路径仅关注 WEB-INF/classes 和 WEB-INF/lib 目录，因此，WEB-INF/lib-provided 中的 JAR 将被 Servlet 容器忽略。这样设计的好处在于，打包后的 WAR 文件能够在 Servlet 容器中兼容运行（避免 JAR 冲突）。
+
+```java
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-tomcat</artifactId>
+    <scope>provided</scope>
+</dependency>
+```
+
+***spring-boot-starter-parent 与 spring-boot-dependencies***
+
+***嵌入式 Servlet Web 容器***
+
