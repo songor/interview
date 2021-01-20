@@ -150,5 +150,17 @@ WEB-INF/lib-provided 目录存放的是 \<scope\>provided\</scope\> 的 JAR 文�
 
 ***spring-boot-starter-parent 与 spring-boot-dependencies***
 
+\<dependencyManagement\> 导入 spring-boot-dependencies 的方式尽管与 spring-boot-starter-parent 方法同源，然而本方式仅关注 \<dependencyManagement\>，所以 maven-war-plugin 采用的版本为 2.2，[ERROR] Failed to execute goal org.apache.maven.plugins:maven-war-plugin:2.2:war (default-war) on project demo: Error assembling WAR: webxml attribute is required (or pre-existing WEB-INF/web.xml if executing in update mode) -> [Help 1]，因此将 maven-war-plugin:\<maven-war-plugin.version\> 添加到项目的 pom.xml 文件中。
+
+xxx.war 中没有主清单属性：spring-boot-maven-plugin 插件未指定版本；需添加 \<goal\> 为 repackage。
+
+[How does Maven add default plugins to my project?](https://mincong.io/2017/11/07/maven-plugins-understanding/#2-how-does-maven-add-default-plugins-to-my-project)
+
+However, is there any plugin enabled when running any Maven command? In order to check this, we need to check the effective POM. This can be achieved by using `mvn help:effective-pom`.
+
+Actually, all the effective plugins are generated based on [Plugin Bindings for default Lifecycle Reference](http://maven.apache.org/ref/3.6.0/maven-core/default-bindings.html).
+
+That’s why you don’t see them in the project’s POM, but only in the effective POM.
+
 ***嵌入式 Servlet Web 容器***
 
