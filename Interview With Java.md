@@ -167,3 +167,13 @@ That’s why you don’t see them in the project’s POM, but only in the effect
 [**Deploy a Spring Boot WAR into a Tomcat Server**](https://www.baeldung.com/spring-boot-war-tomcat-deploy)
 
 We should consider that this new setup makes our Spring Boot application a non-standalone application (if you would like to have it working in standalone mode again, remove the *provided* scope from the tomcat dependency).
+
+[**embedded Tomcat**](https://www.theserverside.com/definition/embedded-Tomcat)
+
+An embedded Tomcat server consists of a single Java web application along with a full Tomcat server distribution, packaged together and compressed into a single JAR, WAR or ZIP file.
+
+One of the most common ways to create an embedded Tomcat file is to use the Maven-Tomcat plugin for a build.
+
+实际上，Tomcat Maven 插件并非嵌入式 Tomcat，仍旧利用了传统 Tomcat 容器部署方式，先将 Web 应用打包为 ROOT.war 文件，然后在 Tomcat 应用启动的过程中，将 ROOT.war 文件解压至 webapps 目录。
+
+反观 Spring Boot 2.0 的实现，它利用嵌入式 Tomcat API 构建为 TomcatWebServer Bean，由 Spring 应用上下文将其引导，其嵌入式 Tomcat 组件的运行（如 Context、Connector 等），以及 ClassLoader 的装载均由 Spring Boot 框架代码实现。
