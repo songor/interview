@@ -177,3 +177,33 @@ One of the most common ways to create an embedded Tomcat file is to use the Mave
 实际上，Tomcat Maven 插件并非嵌入式 Tomcat，仍旧利用了传统 Tomcat 容器部署方式，先将 Web 应用打包为 ROOT.war 文件，然后在 Tomcat 应用启动的过程中，将 ROOT.war 文件解压至 webapps 目录。
 
 反观 Spring Boot 2.0 的实现，它利用嵌入式 Tomcat API 构建为 TomcatWebServer Bean，由 Spring 应用上下文将其引导，其嵌入式 Tomcat 组件的运行（如 Context、Connector 等），以及 ClassLoader 的装载均由 Spring Boot 框架代码实现。
+
+***自动装配***
+
+[**Difference between <context:annotation-config> vs <context:component-scan>**](https://www.baeldung.com/spring-contextannotation-contextcomponentscan)
+
+The \<context:annotation-config\> annotation is mainly used to activate the dependency injection annotations. @Autowired, @Qualifier, @PostConstruct, @PreDestroy, and @Resource are some of the ones that \<context:annotation-config\> can resolve.
+
+Before going further let's point out that we still need to declare beans in the XML. That is because \<context:annotation-config\> activates the annotations only for the beans already registered in the application context.
+
+Moreover, \<context:component-scan\> recognizes bean annotations that \<context:annotation-config\> doesn't detect.
+
+[**Annotation Type Configuration**](https://docs.spring.io/spring-framework/docs/4.0.4.RELEASE/javadoc-api/org/springframework/context/annotation/Configuration.html)
+
+Indicates that a class declares one or more @Bean methods and may be processed by the Spring container to generate bean definitions and service requests for those beans at runtime.
+
+**Bootstrapping @Configuration classes**
+
+Via AnnotationConfigApplicationContext
+
+Via Spring \<beans\> XML
+
+Via component scanning
+
+[**Understanding Auto-configured Beans**](https://docs.spring.io/spring-boot/docs/2.1.8.RELEASE/reference/html/boot-features-developing-auto-configuration.html#boot-features-understanding-auto-configured-beans)
+
+Under the hood, auto-configuration is implemented with standard `@Configuration` classes. Additional `@Conditional` annotations are used to constrain when the auto-configuration should apply. Usually, auto-configuration classes use `@ConditionalOnClass` and `@ConditionalOnMissingBean` annotations. This ensures that auto-configuration applies only when relevant classes are found and when you have not declared your own `@Configuration`.
+
+You can browse the source code of `spring-boot-autoconfigure` to see the `@Configuration` classes that Spring provides (see the `META-INF/spring.factories` file).
+
+Spring Framework 无法自动装配 @Configuration 类。为此，Spring Boot 1.0 在 Spring Framework 4.0 的基础上，添加了约定配置化导入 @Configuration 类的方式。
