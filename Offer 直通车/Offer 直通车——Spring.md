@@ -2,7 +2,7 @@
 
 * Spring IOC
 
-  ![Spring IOC](https://github.com/songor/interview/blob/master/Offer%20%E7%9B%B4%E9%80%9A%E8%BD%A6/picture/Spring%20IOC.png)
+  ![Spring IOC](picture/Spring IOC.png)
 
   * IOC（Inversion of Control）& DI（Dependency Injection）
 
@@ -60,7 +60,7 @@
 
     * 创建
 
-      ![Spring Bean 生命周期（创建）](https://github.com/songor/interview/blob/master/Offer%20%E7%9B%B4%E9%80%9A%E8%BD%A6/picture/Spring%20Bean%20%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%EF%BC%88%E5%88%9B%E5%BB%BA%EF%BC%89.png)
+      ![Spring Bean 生命周期（创建）](picture/Spring Bean 生命周期（创建）.png)
 
     * 销毁
 

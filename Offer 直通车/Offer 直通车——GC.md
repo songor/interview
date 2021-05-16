@@ -126,7 +126,7 @@
 
 * 垃圾收集器
 
-  ![垃圾收集器](https://github.com/songor/interview/blob/master/Offer%20%E7%9B%B4%E9%80%9A%E8%BD%A6/picture/%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8.jpg)
+  ![垃圾收集器](picture/垃圾回收器.jpg)
 
   * [Reference](https://blog.csdn.net/coderlius/article/details/79272773)
 

@@ -111,7 +111,7 @@
 
 * Java 线程状态（java.lang.Thread.State）及转换
 
-  ![Java 线程状态及转换](https://github.com/songor/interview/blob/master/Offer%20%E7%9B%B4%E9%80%9A%E8%BD%A6/picture/Java%20%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E5%8F%8A%E8%BD%AC%E6%8D%A2.png)
+  ![Java 线程状态及转换](picture/Java 线程状态及转换.png)
 
   **新建（New）**：创建后尚未启动的（start()）线程的状态（A thread that has not yet started is in this state）
 
@@ -135,7 +135,7 @@
 
 * notify，notifyAll 和 yield
 
-  ![线程状态图](https://github.com/songor/interview/blob/master/Offer%20%E7%9B%B4%E9%80%9A%E8%BD%A6/picture/%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E5%9B%BE.png)
+  ![线程状态图](picture/线程状态图.png)
 
   在 Java 中，每个对象都有两个池，锁池和等待池
 
@@ -247,7 +247,7 @@
 
   * Java 对象头
 
-    ![Mark Word](https://github.com/songor/interview/blob/master/Offer%20%E7%9B%B4%E9%80%9A%E8%BD%A6/picture/Mark%20Word.png)
+    ![Mark Word](picture/Mark Word.png)
 
     HotSpot 虚拟机中，对象在内存中存储的布局可以分为三块区域：对象头（Header）、实例数据（Instance Data）和对齐填充（Padding）
 
@@ -257,7 +257,7 @@
 
   * Monitor（hotspot - ObjectMonitor.hpp 实现 Monitor）
 
-    ![Monitor](https://github.com/songor/interview/blob/master/Offer%20%E7%9B%B4%E9%80%9A%E8%BD%A6/picture/Monitor.png)
+    ![Monitor](picture/Monitor.png)
 
     每个 Java 对象天生自带了一把看不见的锁（内部锁或 Monitor 锁） -> Java 中任意对象可以作为锁的原因
 
@@ -429,7 +429,7 @@
 
 * JMM
 
-  ![JMM](https://github.com/songor/interview/blob/master/Offer%20%E7%9B%B4%E9%80%9A%E8%BD%A6/picture/JMM.png)
+  ![JMM](picture/JMM.png)
 
   * JMM 概述（Java 采用共享内存并发模型实现线程间通信）
 
@@ -653,7 +653,7 @@
 
   * J.U.C 的三个 Executor 接口
 
-    ![Executor 框架](https://github.com/songor/interview/blob/master/Offer%20%E7%9B%B4%E9%80%9A%E8%BD%A6/picture/Executor%20%E6%A1%86%E6%9E%B6.png)
+    ![Executor 框架](picture/Executor 框架.png)
 
     Executor：运行新任务的简单接口，将任务提交和任务执行细节解耦
 
@@ -695,7 +695,7 @@
 
   * 线程池的状态（AtomicInteger ctl）
 
-    ![线程池状态](https://github.com/songor/interview/blob/master/Offer%20%E7%9B%B4%E9%80%9A%E8%BD%A6/picture/%E7%BA%BF%E7%A8%8B%E6%B1%A0%E7%8A%B6%E6%80%81.png)
+    ![线程池状态](picture/线程池状态.png)
 
     RUNNING：能接受新提交的任务，并且也能处理阻塞队列中的任务
 
@@ -715,4 +715,4 @@
 
 * J.U.C
 
-  ![J.U.C 包](https://github.com/songor/interview/blob/master/Offer%20%E7%9B%B4%E9%80%9A%E8%BD%A6/picture/J.U.C%20%E5%8C%85.png)
+  ![J.U.C 包](picture/J.U.C 包.png)

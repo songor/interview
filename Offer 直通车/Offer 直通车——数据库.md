@@ -30,7 +30,7 @@
 
   * B-Tree
 
-    ![B-Tree](https://github.com/songor/interview/blob/master/Offer%20%E7%9B%B4%E9%80%9A%E8%BD%A6/picture/B-Tree.png)
+    ![B-Tree](picture/B-Tree.png)
 
     根节点至少包括两个孩子
 
@@ -54,7 +54,7 @@
 
   * B+Tree
 
-    ![B+Tree](https://github.com/songor/interview/blob/master/Offer%20%E7%9B%B4%E9%80%9A%E8%BD%A6/picture/B%2BTree.png)
+    ![B+Tree](picture/B+Tree.png)
 
     B+Tree 是 B-Tree 的变体：
 
@@ -96,7 +96,7 @@
 
 * 密集索引和稀疏索引
 
-  ![密集索引和稀疏索引](https://github.com/songor/interview/blob/master/Offer%20%E7%9B%B4%E9%80%9A%E8%BD%A6/picture/%E5%AF%86%E9%9B%86%E7%B4%A2%E5%BC%95%E5%92%8C%E7%A8%80%E7%96%8F%E7%B4%A2%E5%BC%95.png)
+  ![密集索引和稀疏索引](picture/密集索引和稀疏索引.png)
 
   MyISAM（稀疏索引），索引和数据分开存储，叶子节点保存行数据的物理地址。
 

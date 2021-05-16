@@ -38,7 +38,7 @@
 
   * 流程图
 
-    ![TCP 三次握手](https://github.com/songor/interview/blob/master/Offer%20%E7%9B%B4%E9%80%9A%E8%BD%A6/picture/TCP%20%E4%B8%89%E6%AC%A1%E6%8F%A1%E6%89%8B.png)
+    ![TCP 三次握手](picture/TCP 三次握手.png)
 
     在 TCP/IP 协议中，TCP 协议提供可靠的连接服务，采用三次握手建立一个连接。
 
@@ -70,7 +70,7 @@
 
   * 流程图
 
-    ![TCP 四次挥手](https://github.com/songor/interview/blob/master/Offer%20%E7%9B%B4%E9%80%9A%E8%BD%A6/picture/TCP%20%E5%9B%9B%E6%AC%A1%E6%8C%A5%E6%89%8B.png)
+    ![TCP 四次挥手](picture/TCP 四次挥手.png)
 
     第一次挥手：Client 发送一个 FIN，用来关闭 Client 到 Server 的数据传送，Client 进入 FIN_WAIT_1 状态。
 
@@ -146,13 +146,13 @@
 
     滑动窗口机制体现了 TCP 面向字节流的设计（TCP 有一个缓冲，当应用程序传送的数据块太长，TCP 就可以把它划分短一些再传送。如果应用程序一次只发送一个字节，TCP 也可以等待积累有足够多的字节后再构成报文段发送出去）。
 
-    ![TCP 发送方窗口](https://github.com/songor/interview/blob/master/Offer%20%E7%9B%B4%E9%80%9A%E8%BD%A6/picture/TCP%20%E5%8F%91%E9%80%81%E6%96%B9%E7%AA%97%E5%8F%A3.png)
+    ![TCP 发送方窗口](picture/TCP 发送方窗口.png)
 
     发送窗口只有收到发送窗口内字节的 ACK 确认，才会移动发送窗口的左边界。
 
     <已发送，已收到 ACK>**<已发送，未收到 ACK><未发送，但允许发送>**<未发送，但不允许发送>
 
-    ![TCP 接收方窗口](https://github.com/songor/interview/blob/master/Offer%20%E7%9B%B4%E9%80%9A%E8%BD%A6/picture/TCP%20%E6%8E%A5%E6%94%B6%E6%96%B9%E7%AA%97%E5%8F%A3.png)
+    ![TCP 接收方窗口](picture/TCP 接收方窗口.png)
 
     接收窗口只有在前面所有的字节都确认的情况下才会移动左边界。当在前面还有字节未接收但收到后面字节的情况下，窗口不会移动，并不对后续字节确认，以此确保对端会对这些数据重传。
     
@@ -160,7 +160,7 @@
     
     窗口数据计算过程：
     
-    ![窗口数据计算过程](https://github.com/songor/interview/blob/master/Offer%20%E7%9B%B4%E9%80%9A%E8%BD%A6/picture/%E7%AA%97%E5%8F%A3%E6%95%B0%E6%8D%AE%E8%AE%A1%E7%AE%97%E8%BF%87%E7%A8%8B.png)
+    ![窗口数据计算过程](picture/窗口数据计算过程.png)
     
     接收方窗口：AdvertisedWindow = MaxRcvBuffer - (LastByteRcvd - LastByteRead)
     
@@ -182,7 +182,7 @@
 
   * HTTP 请求结构
 
-    ![HTTP 请求结构](https://github.com/songor/interview/blob/master/Offer%20%E7%9B%B4%E9%80%9A%E8%BD%A6/picture/HTTP%20%E8%AF%B7%E6%B1%82%E7%BB%93%E6%9E%84.png)
+    ![HTTP 请求结构](picture/HTTP 请求结构.png)
 
     请求行：请求方法、URL、协议版本
 
@@ -192,7 +192,7 @@
 
   * HTTP 响应结构
 
-    ![HTTP 响应结构](https://github.com/songor/interview/blob/master/Offer%20%E7%9B%B4%E9%80%9A%E8%BD%A6/picture/HTTP%20%E5%93%8D%E5%BA%94%E7%BB%93%E6%9E%84.png)
+    ![HTTP 响应结构](picture/HTTP 响应结构.png)
 
     状态行：协议版本、状态码、状态码描述
 
@@ -359,7 +359,7 @@
 
   Socket 通信流程
 
-  ![Socket 通信流程](https://github.com/songor/interview/blob/master/Offer%20%E7%9B%B4%E9%80%9A%E8%BD%A6/picture/Socket%20%E9%80%9A%E4%BF%A1%E6%B5%81%E7%A8%8B.png)
+  ![Socket 通信流程](picture/Socket 通信流程.png)
 
   server -> socket()；bind()；listen()；accept()；recv()；close()
   

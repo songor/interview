@@ -64,7 +64,7 @@
 
   * Java 集合框架（List 和 Set）
 
-    ![List 和 Set](https://github.com/songor/interview/blob/master/Offer%20%E7%9B%B4%E9%80%9A%E8%BD%A6/picture/List%20%E5%92%8C%20Set.png)
+    ![List 和 Set](picture/List 和 Set.png)
 
     Vector 不是线程安全的
 
@@ -88,7 +88,7 @@
 
     * put 逻辑
 
-      ![HashMap 的 put 方法](https://github.com/songor/interview/blob/master/Offer%20%E7%9B%B4%E9%80%9A%E8%BD%A6/picture/HashMap%20%E7%9A%84%20put%20%E6%96%B9%E6%B3%95.png)
+      ![HashMap 的 put 方法](picture/HashMap 的 put 方法.png)
 
       若 HashMap 未被初始化，则进行初始化操作（resize）
 

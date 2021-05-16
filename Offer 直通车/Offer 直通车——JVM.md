@@ -14,7 +14,7 @@
 
   Java 虚拟机：屏蔽底层操作系统平台的不同
 
-  ![Java 虚拟机](https://github.com/songor/interview/blob/master/Offer%20%E7%9B%B4%E9%80%9A%E8%BD%A6/picture/Java%20%E8%99%9A%E6%8B%9F%E6%9C%BA.png)
+  ![Java 虚拟机](picture/Java 虚拟机.png)
 
   Class Loader：依据特定格式，加载 class 文件到内存
 
@@ -102,7 +102,7 @@
 
   * ClassLoader 的双亲委派机制
 
-    ![双亲委派机制](https://github.com/songor/interview/blob/master/Offer%20%E7%9B%B4%E9%80%9A%E8%BD%A6/picture/%E5%8F%8C%E4%BA%B2%E5%A7%94%E6%B4%BE%E6%9C%BA%E5%88%B6.png)
+    ![双亲委派机制](picture/双亲委派机制.png)
 
     向上询问是否已加载；逐层尝试是否可加载
 
@@ -136,7 +136,7 @@
 
   * 线程角度
 
-    ![JVM 内存模型（线程）](https://github.com/songor/interview/blob/master/Offer%20%E7%9B%B4%E9%80%9A%E8%BD%A6/picture/JVM%20%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B%EF%BC%88%E7%BA%BF%E7%A8%8B%EF%BC%89.png)
+    ![JVM 内存模型（线程）](picture/JVM 内存模型（线程）.png)
 
     线程私有：程序计数器、虚拟机栈、本地方法栈
 
@@ -156,7 +156,7 @@
 
   * Java 虚拟机栈（Stack）
 
-    ![Java 虚拟机栈](https://github.com/songor/interview/blob/master/Offer%20%E7%9B%B4%E9%80%9A%E8%BD%A6/picture/Java%20%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%A0%88.png)
+    ![Java 虚拟机栈](picture/Java 虚拟机栈.png)
 
     Java 方法执行的内存模型
 
