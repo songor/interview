@@ -27,18 +27,17 @@
       * 内存溢出
 
         线程异常了，但由该线程创建的对象并不会马上回收，如果再重新启动新线程，再创建一批新对象，特别是加入了场景接管，就非常危险了。
-      
-
+    
   * implements Callable
-
+  
     * Callable 与 Runnable 有两点不同
-
+  
       * 可以通过 call() 获得返回值
-
+  
         前两种方式都有一个共同的缺陷，即在任务执行完成后，无法直接获取执行结果，需要借助共享变量等获取，而 Callable 和 Future 则很好地解决了这个问题。
-
+  
       * call() 可以抛出异常
-
+  
         而 Runnable 只有通过 setDefaultUncaughtExceptionHandler() 的方式才能在主线程中捕捉到子线程异常。
       
     * 异步运算考虑使用Callbale接口
@@ -103,10 +102,10 @@
       * 可以监控线程执行的情况，比如是否执行完毕、是否有返回值、是否有异常等。
       
       * 可以为用户提供更好地支持，比如例子中的运算进度。
-
+  
 * 线程在生命周期内存在多种状态
 
-  ![线程状态图](https://github.com/songor/interview/blob/master/picture/%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E5%9B%BE.jpg)
+  ![线程状态图](picture/线程状态图.jpg)
 
   * 新建状态（NEW）
 
